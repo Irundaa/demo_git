@@ -20,16 +20,16 @@ public class StudentService {
 //        this.studentRepository = studentRepository;
 //    }
 
-    public void addNewStudent(StudentDTOO studentDTOO) throws IllegalAccessException {
+    public void addNewStudent(StudentDTO studentDTO) throws IllegalAccessException {
 //        Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
 //        if (studentOptional.isPresent()) {
 //            throw new IllegalAccessException("email taken");
 //        }
         Student student = new Student();
-        student.setEmail(studentDTOO.getEmail());
-        student.setName(studentDTOO.getName());
-        student.setDob(studentDTOO.getDob());
-        if (studentRepository.selectExistsEmail(studentDTOO.getEmail())) {
+        student.setEmail(studentDTO.getEmail());
+        student.setName(studentDTO.getName());
+        student.setDob(studentDTO.getDob());
+        if (studentRepository.selectExistsEmail(studentDTO.getEmail())) {
             throw new IllegalAccessException("email taken");
         }
         studentRepository.save(student);
@@ -66,15 +66,15 @@ public class StudentService {
             student.setEmail(email);
         }
     }
-    public Optional<StudentDTOO> findStudentById(Long studentId) {
+    public Optional<StudentDTO> findStudentById(Long studentId) {
         Optional<Student> fromDB = studentRepository.findById(studentId);
         Student student = fromDB.get();
         return Optional.of(convert(student));
     }
 
-    public List<StudentDTOO> getStudents(){
+    public List<StudentDTO> getStudents(){
         List<Student> students = studentRepository.findAll();
-        List<StudentDTOO> studentsDTO = new ArrayList<>();
+        List<StudentDTO> studentsDTO = new ArrayList<>();
 
         for (Student student : students) {
             studentsDTO.add(convert(student));
@@ -82,13 +82,13 @@ public class StudentService {
         return studentsDTO;
     }
 
-    private StudentDTOO convert(Student student) {
-        StudentDTOO studentDTOO = new StudentDTOO();
-        studentDTOO.setId(student.getId());
-        studentDTOO.setName(student.getName());
-        studentDTOO.setEmail(student.getEmail());
-        studentDTOO.setDob(student.getDob());
-        studentDTOO.setAge(student.getAge());
-        return studentDTOO;
+    private StudentDTO convert(Student student) {
+        StudentDTO studentDTO = new StudentDTO();
+        studentDTO.setId(student.getId());
+        studentDTO.setName(student.getName());
+        studentDTO.setEmail(student.getEmail());
+        studentDTO.setDob(student.getDob());
+        studentDTO.setAge(student.getAge());
+        return studentDTO;
     }
 }

@@ -8,14 +8,14 @@ import java.time.Period;
 
 @Data
 @NoArgsConstructor
-public class StudentDTOO {
+public class StudentDTO {
     private Long id;
     private String name;
     private LocalDate dob;
     private String email;
     private Integer age;
 
-    public StudentDTOO(Long id, String name, LocalDate dob, String email) {
+    public StudentDTO(Long id, String name, LocalDate dob, String email) {
         this.id = id;
         this.name = name;
         this.dob = dob;

@@ -19,12 +19,12 @@ public class StudentController {
     }
 
     @GetMapping("/{studentId}")
-    public Optional<StudentDTOO> findStudentById(@PathVariable Long studentId) {
+    public Optional<StudentDTO> findStudentById(@PathVariable Long studentId) {
         return studentService.findStudentById(studentId);
     }
 
     @PostMapping
-    public void registerNewStudent(@RequestBody StudentDTOO student) throws IllegalAccessException {
+    public void registerNewStudent(@RequestBody StudentDTO student) throws IllegalAccessException {
         studentService.addNewStudent(student);
     }
 
@@ -42,7 +42,7 @@ public class StudentController {
     }
 
     @GetMapping
-    public List<StudentDTOO> getStudents(){
+    public List<StudentDTO> getStudents(){
         return studentService.getStudents();
     }
 
