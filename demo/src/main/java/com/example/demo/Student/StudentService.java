@@ -15,11 +15,6 @@ public class StudentService {
     @Autowired
     private StudentRepository studentRepository;
 
-//    @Autowired
-//    public StudentService(StudentRepository studentRepository) {
-//        this.studentRepository = studentRepository;
-//    }
-
     public void addNewStudent(StudentDTO studentDTO) throws IllegalAccessException {
 //        Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
 //        if (studentOptional.isPresent()) {
