@@ -28,7 +28,7 @@ public class StudentService {
         student.setName(studentDTO.getName());
         student.setDob(studentDTO.getDob());
         if (studentRepository.selectExistsEmail(studentDTO.getEmail())) {
-            throw new EmailAlreadyTakenException("email taken");
+            throw new EmailAlreadyTakenException("email taken"); //написати який саме тейкен
         }
         studentRepository.save(student);
     }
@@ -55,14 +55,15 @@ public class StudentService {
 
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be null or empty");
-        } else if (!Objects.equals(name, student.getName())) {
+        }
+        if (!Objects.equals(name, student.getName())) {
             student.setName(name);
         }
 
 
         if (email != null &&
                 email.length() > 0 &&
-                !Objects.equals(email, student.getEmail())) {
+                !Objects.equals(email, student.getEmail())) { //новий метод із імейл тейкен
             Optional<Student> studentOptional = studentRepository
                     .findStudentByEmail(email);
             if (studentOptional.isPresent()) {
