@@ -15,6 +15,9 @@ public class StudentService {
     @Autowired
     private StudentRepository studentRepository;
 
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
     public void addNewStudent(StudentDTO studentDTO) throws IllegalAccessException {
 //        Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
 //        if (studentOptional.isPresent()) {
@@ -25,7 +28,7 @@ public class StudentService {
         student.setName(studentDTO.getName());
         student.setDob(studentDTO.getDob());
         if (studentRepository.selectExistsEmail(studentDTO.getEmail())) {
-            throw new IllegalAccessException("email taken");
+            throw new EmailAlreadyTakenException("email taken");
         }
         studentRepository.save(student);
     }
@@ -33,22 +36,29 @@ public class StudentService {
     public void deleteStudent(Long studentId) {
         boolean exists = studentRepository.existsById(studentId);
         if(!exists) {
-            throw new IllegalArgumentException("Student with id " + studentId + " does not exists");
+            throw new StudentWithIdDoesNotExistException("Student with id " + studentId + " does not exists");
         }
         studentRepository.deleteById(studentId);
     }
 
     @Transactional
-    public void updateStudent(Long studentId, String name, String email) {
+    public void updateStudent(Long studentId, String name, String email) throws EmailAlreadyTakenException {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new StudentWithIdDoesNotExistException(
                         "Student with id " + studentId + " does not exists"));
 
-        if (name != null &&
-                name.length() > 0 &&
-                !Objects.equals(name, student.getName())) {
+//        if (name != null &&
+//                name.length() > 0 &&
+//                !Objects.equals(name, student.getName())) {
+//            student.setName(name);
+//        }
+
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        } else if (!Objects.equals(name, student.getName())) {
             student.setName(name);
         }
+
 
         if (email != null &&
                 email.length() > 0 &&
@@ -56,7 +66,7 @@ public class StudentService {
             Optional<Student> studentOptional = studentRepository
                     .findStudentByEmail(email);
             if (studentOptional.isPresent()) {
-                throw new IllegalArgumentException("email taken");
+                throw new EmailAlreadyTakenException("email taken");
             }
             student.setEmail(email);
         }
