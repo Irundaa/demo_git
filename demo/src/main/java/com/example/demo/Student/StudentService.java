@@ -59,19 +59,24 @@ public class StudentService {
         if (!Objects.equals(name, student.getName())) {
             student.setName(name);
         }
+        if (isEmailTaken(email, student)){
+            student.setEmail(email);
+        }
+    }
 
-
+    public boolean isEmailTaken(String email, Student student) throws EmailAlreadyTakenException {
         if (email != null &&
                 email.length() > 0 &&
-                !Objects.equals(email, student.getEmail())) { //новий метод із імейл тейкен
+                !Objects.equals(email, student.getEmail())) {
             Optional<Student> studentOptional = studentRepository
                     .findStudentByEmail(email);
             if (studentOptional.isPresent()) {
                 throw new EmailAlreadyTakenException("email taken");
             }
-            student.setEmail(email);
         }
+        return true;
     }
+
     public Optional<StudentDTO> findStudentById(Long studentId) {
         Optional<Student> fromDB = studentRepository.findById(studentId);
         Student student = fromDB.get();
