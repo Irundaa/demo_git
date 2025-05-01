@@ -55,6 +55,32 @@ public class StudentServiceTest {
 
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void updateStudentThrowsStudentWithIdDoesNotExistException() throws IllegalArgumentException, EmailAlreadyTakenException {
+        when(studentRepository.findById(10L)).thenReturn(Optional.empty());
+
+        studentService.updateStudent(10L, "Mary Jane", "Mary23@gmail.com");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void updateStudentThrowsNameCannotBeNullException() throws IllegalArgumentException, EmailAlreadyTakenException {
+        Student student = new Student();
+
+        when(studentRepository.findById(10L)).thenReturn(Optional.ofNullable(student));
+
+        studentService.updateStudent(10L, null, "Mary23@gmail.com");
+    }
+
+    @Test(expected = EmailAlreadyTakenException.class)
+    public void updateStudentThrowsEmailAlreadyTakenException() throws IllegalArgumentException, EmailAlreadyTakenException {
+        Student student = new Student();
+
+        when(studentRepository.findById(10L)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail("Mary23@gmail.com")).thenReturn(Optional.ofNullable(student));
+
+        studentService.updateStudent(10L, "Mary Jane", "Mary23@gmail.com");
+    }
+
     @Test
     public void findStudentById() {
     }

@@ -28,7 +28,7 @@ public class StudentService {
         student.setName(studentDTO.getName());
         student.setDob(studentDTO.getDob());
         if (studentRepository.selectExistsEmail(studentDTO.getEmail())) {
-            throw new EmailAlreadyTakenException("email taken"); //написати який саме тейкен
+            throw new EmailAlreadyTakenException("email " + student.getEmail() + " is taken"); //написати який саме тейкен
         }
         studentRepository.save(student);
     }
@@ -42,7 +42,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void updateStudent(Long studentId, String name, String email) throws EmailAlreadyTakenException {
+    public void updateStudent(Long studentId, String name, String email) throws IllegalArgumentException, EmailAlreadyTakenException {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentWithIdDoesNotExistException(
                         "Student with id " + studentId + " does not exists"));
