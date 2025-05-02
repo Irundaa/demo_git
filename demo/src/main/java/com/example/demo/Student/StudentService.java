@@ -3,6 +3,7 @@ package com.example.demo.Student;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,66 +19,61 @@ public class StudentService {
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
-    public void addNewStudent(StudentDTO studentDTO) throws IllegalAccessException {
-//        Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
-//        if (studentOptional.isPresent()) {
-//            throw new IllegalAccessException("email taken");
-//        }
+
+    public void addNewStudent(StudentDTO studentDTO) throws EmailAlreadyTakenException {
         Student student = new Student();
         student.setEmail(studentDTO.getEmail());
         student.setName(studentDTO.getName());
         student.setDob(studentDTO.getDob());
         if (studentRepository.selectExistsEmail(studentDTO.getEmail())) {
-            throw new EmailAlreadyTakenException("email taken");
+            throw new EmailAlreadyTakenException(String.format("email %s is taken", student.getEmail())); //написати який саме тейкен
         }
         studentRepository.save(student);
     }
 
     public void deleteStudent(Long studentId) {
         boolean exists = studentRepository.existsById(studentId);
-        if(!exists) {
-            throw new StudentWithIdDoesNotExistException("Student with id " + studentId + " does not exists");
+        if (!exists) {
+            throw new StudentWithIdDoesNotExistException("Student with id " + studentId + " does not exists"); //do the same format
         }
         studentRepository.deleteById(studentId);
     }
 
     @Transactional
-    public void updateStudent(Long studentId, String name, String email) throws EmailAlreadyTakenException {
+    public void updateStudent(Long studentId, String name, String email) throws IllegalArgumentException{
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentWithIdDoesNotExistException(
-                        "Student with id " + studentId + " does not exists"));
-
-//        if (name != null &&
-//                name.length() > 0 &&
-//                !Objects.equals(name, student.getName())) {
-//            student.setName(name);
-//        }
-
+                        "Student with id " + studentId + " does not exists")); //do
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be null or empty");
-        } else if (!Objects.equals(name, student.getName())) {
+        }
+        if (!Objects.equals(name, student.getName())) {
             student.setName(name);
         }
+        if (isEmailFree(email, student)) {
+            student.setEmail(email);
+        }
+    }//розглянути 4 варіанти для оновлення студента в окремому методі
 
-
-        if (email != null &&
-                email.length() > 0 &&
+    public boolean isEmailFree(String email, Student student) throws EmailAlreadyTakenException {
+        if (!StringUtils.isEmpty(email) &&
                 !Objects.equals(email, student.getEmail())) {
             Optional<Student> studentOptional = studentRepository
                     .findStudentByEmail(email);
             if (studentOptional.isPresent()) {
                 throw new EmailAlreadyTakenException("email taken");
             }
-            student.setEmail(email);
         }
+        return true;
     }
+
     public Optional<StudentDTO> findStudentById(Long studentId) {
         Optional<Student> fromDB = studentRepository.findById(studentId);
         Student student = fromDB.get();
         return Optional.of(convert(student));
     }
 
-    public List<StudentDTO> getStudents(){
+    public List<StudentDTO> getStudents() {
         List<Student> students = studentRepository.findAll();
         List<StudentDTO> studentsDTO = new ArrayList<>();
 
