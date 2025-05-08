@@ -34,7 +34,7 @@ public class StudentService {
     public void deleteStudent(Long studentId) {
         boolean exists = studentRepository.existsById(studentId);
         if (!exists) {
-            throw new StudentWithIdDoesNotExistException("Student with id " + studentId + " does not exists"); //do the same format
+            throw new StudentWithIdDoesNotExistException(String.format("Student with id %s does not exists", studentId)); //do the same format
         }
         studentRepository.deleteById(studentId);
     }
@@ -43,15 +43,22 @@ public class StudentService {
     public void updateStudent(Long studentId, String name, String email) throws IllegalArgumentException{
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentWithIdDoesNotExistException(
-                        "Student with id " + studentId + " does not exists")); //do
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cannot be null or empty");
-        }
-        if (!Objects.equals(name, student.getName())) {
+                        String.format("Student with id %s does not exists", studentId))); //do
+
+        boolean isUpdated = false;
+
+        if (name != null && !name.trim().isEmpty() && !Objects.equals(name, student.getName())) {
             student.setName(name);
+            isUpdated = true;
         }
-        if (isEmailFree(email, student)) {
+
+        if (email != null && !email.trim().isEmpty() && isEmailFree(email, student)) {
             student.setEmail(email);
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("Name and/or email must be provided and different from existing values");
         }
     }//розглянути 4 варіанти для оновлення студента в окремому методі
 
