@@ -60,7 +60,7 @@ public class StudentService {
         if (!isUpdated) {
             throw new IllegalArgumentException("Name and/or email must be provided and different from existing values");
         }
-    }//розглянути 4 варіанти для оновлення студента в окремому методі
+    }
 
     public boolean isEmailFree(String email, Student student) throws EmailAlreadyTakenException {
         if (!StringUtils.isEmpty(email) &&
@@ -68,7 +68,7 @@ public class StudentService {
             Optional<Student> studentOptional = studentRepository
                     .findStudentByEmail(email);
             if (studentOptional.isPresent()) {
-                throw new EmailAlreadyTakenException("email taken");
+                throw new EmailAlreadyTakenException(String.format("email %s is taken", email));
             }
         }
         return true;

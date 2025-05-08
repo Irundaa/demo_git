@@ -28,13 +28,16 @@ public class StudentServiceTest {
     private static final LocalDate DOB = LocalDate.of(2002, 1, 1);
     private static final String EMAIL = "mary@gmail.com";
     private StudentDTO studentDTO = new StudentDTO(1L, NAME, DOB, EMAIL);
-    //повиносити змінні
 
-    @Test(expected = EmailAlreadyTakenException.class)
-    public void addNewStudentThrowsException() throws EmailAlreadyTakenException {
+    @Test
+    public void addNewStudentThrowsException(){
         when(studentRepository.selectExistsEmail(studentDTO.getEmail())).thenReturn(true);
 
-        studentService.addNewStudent(studentDTO);
+        try {
+            studentService.addNewStudent(studentDTO);
+        } catch (EmailAlreadyTakenException e) {
+            assertEquals(String.format("email %s is taken", studentDTO.getEmail()), e.getMessage());
+        }
     }
 
     @Test
@@ -47,11 +50,15 @@ public class StudentServiceTest {
         verify(studentRepository).save(student);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void deleteStudentThrowsException() throws IllegalArgumentException {
+    @Test
+    public void deleteStudentThrowsException() {
         when(studentRepository.existsById(studentDTO.getId())).thenReturn(false);
 
-        studentService.deleteStudent(studentDTO.getId());
+        try {
+            studentService.deleteStudent(studentDTO.getId());
+        } catch (IllegalArgumentException e) {
+            assertEquals(String.format("Student with id %s does not exists", studentDTO.getId()), e.getMessage());
+        }
     }
 
     @Test
@@ -64,8 +71,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    public void updateStudent() throws EmailAlreadyTakenException {
-//        Student student = mock(Student.class);
+    public void updateStudentEmailAndName() throws EmailAlreadyTakenException {
         Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
         when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
@@ -74,7 +80,29 @@ public class StudentServiceTest {
 
         assertEquals(NAME, student.getName());
         assertEquals(EMAIL, student.getEmail());
-    }//протестити всі кейси
+    }
+
+    @Test
+    public void updateStudentName() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        studentService.updateStudent(ID, NAME, null);
+
+        assertEquals(NAME, student.getName());
+    }
+
+    @Test
+    public void updateStudentEmail() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        studentService.updateStudent(ID, null, EMAIL);
+
+        assertEquals(EMAIL, student.getEmail());
+    }
 
     @Test
     public void updateStudentThrowsStudentWithIdDoesNotExistException() {
@@ -87,8 +115,8 @@ public class StudentServiceTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void updateStudentThrowsNameAndEmailCannotBeNullException() throws IllegalArgumentException {
+    @Test
+    public void updateStudentThrowsNameAndEmailCannotBeNullException(){
         Student student = new Student();
 
         when(studentRepository.findById(ID)).thenReturn(Optional.of(student));
@@ -101,13 +129,17 @@ public class StudentServiceTest {
         }
     }
 
-    @Test(expected = EmailAlreadyTakenException.class)
-    public void updateStudentThrowsEmailAlreadyTakenException() throws EmailAlreadyTakenException {
+    @Test
+    public void updateStudentThrowsEmailAlreadyTakenException() {
         Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.of(student));
         when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.of(student));
 
-        studentService.updateStudent(ID, NAME, EMAIL);
+        try {
+            studentService.updateStudent(ID, NAME, EMAIL);
+        } catch (EmailAlreadyTakenException e) {
+            assertEquals(String.format("email %s is taken", EMAIL), e.getMessage());
+        }
     }
 
     @Test
