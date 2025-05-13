@@ -1,9 +1,9 @@
 package com.example.demo.Student;
 
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,21 +39,24 @@ public class StudentService {
         studentRepository.deleteById(studentId);
     }
 
+    //отримувати студента дто а не окремі атрибути так само в контролері
     @Transactional
-    public void updateStudent(Long studentId, String name, String email) throws IllegalArgumentException{
-        Student student = studentRepository.findById(studentId)
+    public void updateStudent(StudentDTO studentDTO, Long studentId) throws IllegalArgumentException{
+        Student studentDB = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentWithIdDoesNotExistException(
-                        String.format("Student with id %s does not exists", studentId))); //do
+                        "Student with id " + studentId + " does not exists"));
+        String name = studentDTO.getName();
+        String email = studentDTO.getEmail();
 
         boolean isUpdated = false;
 
-        if (name != null && !name.trim().isEmpty() && !Objects.equals(name, student.getName())) {
-            student.setName(name);
+        if (StringUtils.isNotBlank(name) && !Objects.equals(name, studentDB.getName())) {
+            studentDB.setName(name);
             isUpdated = true;
         }
 
-        if (email != null && !email.trim().isEmpty() && isEmailFree(email, student)) {
-            student.setEmail(email);
+        if (isEmailFree(email, studentDB)) {
+            studentDB.setEmail(email);
             isUpdated = true;
         }
 
@@ -63,15 +66,16 @@ public class StudentService {
     }
 
     public boolean isEmailFree(String email, Student student) throws EmailAlreadyTakenException {
-        if (!StringUtils.isEmpty(email) &&
+        if (StringUtils.isNotBlank(email) &&
                 !Objects.equals(email, student.getEmail())) {
             Optional<Student> studentOptional = studentRepository
                     .findStudentByEmail(email);
             if (studentOptional.isPresent()) {
                 throw new EmailAlreadyTakenException(String.format("email %s is taken", email));
             }
+            return true;
         }
-        return true;
+        return false;
     }
 
     public Optional<StudentDTO> findStudentById(Long studentId) {

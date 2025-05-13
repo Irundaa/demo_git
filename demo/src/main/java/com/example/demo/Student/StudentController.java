@@ -29,20 +29,18 @@ public class StudentController {
     }
 
     @DeleteMapping(path = "{studentId}")
-    public void deleteStudent(@PathVariable("studentId") Long studentId){
+    public void deleteStudent(@PathVariable("studentId") Long studentId) {
         studentService.deleteStudent(studentId);
     }
 
     @PutMapping(path = "{studentId}")
-    public void updateStudent(
-            @PathVariable("studentId") Long studentId,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email) throws EmailAlreadyTakenException {
-        studentService.updateStudent(studentId, name, email);
+    public void updateStudent(@RequestBody StudentDTO studentDTO,
+                              @PathVariable("studentId") Long studentId) throws EmailAlreadyTakenException {
+        studentService.updateStudent(studentDTO, studentId);
     }
 
     @GetMapping
-    public List<StudentDTO> getStudents(){
+    public List<StudentDTO> getStudents() {
         return studentService.getStudents();
     }
 
