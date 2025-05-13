@@ -1,9 +1,9 @@
 package com.example.demo.Student;
 
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,37 +34,48 @@ public class StudentService {
     public void deleteStudent(Long studentId) {
         boolean exists = studentRepository.existsById(studentId);
         if (!exists) {
-            throw new StudentWithIdDoesNotExistException("Student with id " + studentId + " does not exists"); //do the same format
+            throw new StudentWithIdDoesNotExistException(String.format("Student with id %s does not exists", studentId)); //do the same format
         }
         studentRepository.deleteById(studentId);
     }
 
+    //отримувати студента дто а не окремі атрибути так само в контролері
     @Transactional
-    public void updateStudent(Long studentId, String name, String email) throws IllegalArgumentException{
-        Student student = studentRepository.findById(studentId)
+    public void updateStudent(StudentDTO studentDTO, Long studentId) throws IllegalArgumentException{
+        Student studentDB = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentWithIdDoesNotExistException(
-                        "Student with id " + studentId + " does not exists")); //do
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cannot be null or empty");
+                        "Student with id " + studentId + " does not exists"));
+        String name = studentDTO.getName();
+        String email = studentDTO.getEmail();
+
+        boolean isUpdated = false;
+
+        if (StringUtils.isNotBlank(name) && !Objects.equals(name, studentDB.getName())) {
+            studentDB.setName(name);
+            isUpdated = true;
         }
-        if (!Objects.equals(name, student.getName())) {
-            student.setName(name);
+
+        if (isEmailFree(email, studentDB)) {
+            studentDB.setEmail(email);
+            isUpdated = true;
         }
-        if (isEmailFree(email, student)) {
-            student.setEmail(email);
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("Name and/or email must be provided and different from existing values");
         }
-    }//розглянути 4 варіанти для оновлення студента в окремому методі
+    }
 
     public boolean isEmailFree(String email, Student student) throws EmailAlreadyTakenException {
-        if (!StringUtils.isEmpty(email) &&
+        if (StringUtils.isNotBlank(email) &&
                 !Objects.equals(email, student.getEmail())) {
             Optional<Student> studentOptional = studentRepository
                     .findStudentByEmail(email);
             if (studentOptional.isPresent()) {
-                throw new EmailAlreadyTakenException("email taken");
+                throw new EmailAlreadyTakenException(String.format("email %s is taken", email));
             }
+            return true;
         }
-        return true;
+        return false;
     }
 
     public Optional<StudentDTO> findStudentById(Long studentId) {
