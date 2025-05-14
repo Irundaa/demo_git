@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +27,7 @@ public class StudentService {
         student.setName(studentDTO.getName());
         student.setDob(studentDTO.getDob());
         if (studentRepository.selectExistsEmail(studentDTO.getEmail())) {
-            throw new EmailAlreadyTakenException(String.format("email %s is taken", student.getEmail())); //написати який саме тейкен
+            throw new EmailAlreadyTakenException(String.format("email %s is taken", student.getEmail()));
         }
         studentRepository.save(student);
     }
@@ -34,12 +35,11 @@ public class StudentService {
     public void deleteStudent(Long studentId) {
         boolean exists = studentRepository.existsById(studentId);
         if (!exists) {
-            throw new StudentWithIdDoesNotExistException(String.format("Student with id %s does not exists", studentId)); //do the same format
+            throw new StudentWithIdDoesNotExistException(String.format("Student with id %s does not exists", studentId));
         }
         studentRepository.deleteById(studentId);
     }
 
-    //отримувати студента дто а не окремі атрибути так само в контролері
     @Transactional
     public void updateStudent(StudentDTO studentDTO, Long studentId) throws IllegalArgumentException{
         Student studentDB = studentRepository.findById(studentId)
@@ -47,6 +47,7 @@ public class StudentService {
                         "Student with id " + studentId + " does not exists"));
         String name = studentDTO.getName();
         String email = studentDTO.getEmail();
+        LocalDate dob = studentDTO.getDob();
 
         boolean isUpdated = false;
 
@@ -60,8 +61,13 @@ public class StudentService {
             isUpdated = true;
         }
 
+        if (dob != null && !Objects.equals(dob, studentDB.getDob())) {
+            studentDB.setDob(dob);
+            isUpdated = true;
+        }
+
         if (!isUpdated) {
-            throw new IllegalArgumentException("Name and/or email must be provided and different from existing values");
+            throw new IllegalArgumentException("Dob, Name and/or email must be provided and different from existing values");
         }
     }
 

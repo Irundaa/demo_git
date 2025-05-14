@@ -74,7 +74,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    public void updateStudentEmailAndName() throws EmailAlreadyTakenException {
+    public void updateStudentEmailAndNameAndDob() throws EmailAlreadyTakenException {
         Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
         when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
@@ -83,115 +83,184 @@ public class StudentServiceTest {
 
         assertEquals(NAME, student.getName());
         assertEquals(EMAIL, student.getEmail());
+        assertEquals(DOB, student.getDob());
     }
 
-    //пофіксити тести
+    @Test
+    public void updateStudentEmailAndName() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
+        studentDTOForUpdate.setDob(null);
+
+        studentService.updateStudent(studentDTOForUpdate, ID);
+
+        assertEquals(NAME, student.getName());
+        assertEquals(EMAIL, student.getEmail());
+    }
+
+    @Test
+    public void updateStudentEmailAndDob() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
+        studentDTOForUpdate.setName(null);
+
+        studentService.updateStudent(studentDTOForUpdate, ID);
+
+        assertEquals(DOB, student.getDob());
+        assertEquals(EMAIL, student.getEmail());
+    }
+
+    @Test
+    public void updateStudentDobAndName() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
+        studentDTOForUpdate.setEmail(null);
+
+        studentService.updateStudent(studentDTOForUpdate, ID);
+
+        assertEquals(NAME, student.getName());
+        assertEquals(DOB, student.getDob());
+    }
+
     @Test
     public void updateStudentName() throws EmailAlreadyTakenException {
         Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
 
         studentDTOForUpdate.setEmail(null);
+        studentDTOForUpdate.setDob(null);
 
         studentService.updateStudent(studentDTOForUpdate, ID);
 
         assertEquals(NAME, student.getName());
     }
 
-//    @Test
-//    public void updateStudentEmail() throws EmailAlreadyTakenException {
-//        Student student = new Student();
-//        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-//        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
-//
-//        studentService.updateStudent(ID, null, EMAIL);
-//
-//        assertEquals(EMAIL, student.getEmail());
-//    }
+    @Test
+    public void updateStudentEmail() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
 
-//    @Test
-//    public void updateStudentEmailBlank() throws EmailAlreadyTakenException {
-//        Student student = new Student();
-//        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-//        when(studentRepository.findStudentByEmail(" ")).thenReturn(Optional.empty());
-//
-//        try {
-//            studentService.updateStudent(ID, null, " ");
-//            fail("Should have thrown an exception");
-//        } catch (IllegalArgumentException e) {
-//            assertEquals("Name and/or email must be provided and different from existing values", e.getMessage());
-//        }
-//    }
+        studentDTOForUpdate.setName(null);
+        studentDTOForUpdate.setDob(null);
 
-//    @Test
-//    public void updateStudentNameBlank() throws EmailAlreadyTakenException {
-//        Student student = new Student();
-//        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-//
-//        try {
-//            studentService.updateStudent(ID, " ", null);
-//            fail("Should have thrown an exception");
-//        } catch (IllegalArgumentException e) {
-//            assertEquals("Name and/or email must be provided and different from existing values", e.getMessage());
-//        }
-//    }
+        studentService.updateStudent(studentDTOForUpdate, ID);
 
-//    @Test
-//    public void updateStudentEmailException() throws EmailAlreadyTakenException {
-//        Student student = new Student();
-//        student.setEmail(EMAIL);
-//        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-//
-//        try {
-//            studentService.updateStudent(ID, null, EMAIL);
-//            fail("Should have thrown an exception");
-//        } catch (IllegalArgumentException e) {
-//            assertEquals("Name and/or email must be provided and different from existing values", e.getMessage());
-//        }
-//
-//    }
+        assertEquals(EMAIL, student.getEmail());
+    }
 
+    @Test
+    public void updateStudentDob() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.of(student));
+        studentDTOForUpdate.setName(null);
+        studentDTOForUpdate.setEmail(null);
 
+        studentService.updateStudent(studentDTOForUpdate, ID);
 
-//    @Test
-//    public void updateStudentThrowsStudentWithIdDoesNotExistException() {
-//        when(studentRepository.findById(ID)).thenReturn(Optional.empty());
-//
-//        try {
-//            studentService.updateStudent(ID, NAME, EMAIL);
-//            fail("Should have thrown an exception");
-//        } catch (IllegalArgumentException e) {
-//            assertEquals(String.format("Student with id %s does not exists", ID), e.getMessage());
-//        }
-//    }
-//
-//    @Test
-//    public void updateStudentThrowsNameAndEmailCannotBeNullException(){
-//        Student student = new Student();
-//
-//        when(studentRepository.findById(ID)).thenReturn(Optional.of(student));
-//
-//        try {
-//            studentService.updateStudent(ID, null, null);
-//            fail("Should have thrown an exception");
-//        } catch (IllegalArgumentException e) {
-//            assertEquals("Name and/or email must be provided and different from existing values", e.getMessage());
-//        }
-//    }
-//
-//    @Test
-//    public void updateStudentThrowsEmailAlreadyTakenException() {
-//        Student student = new Student();
-//        when(studentRepository.findById(ID)).thenReturn(Optional.of(student));
-//        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.of(student));
-//
-//        try {
-//            studentService.updateStudent(ID, NAME, EMAIL);
-//            fail("Should have thrown an exception");
-//        } catch (EmailAlreadyTakenException e) {
-//            assertEquals(String.format("email %s is taken", EMAIL), e.getMessage());
-//        }
-//    }
+        assertEquals(DOB, student.getDob());
+    }
+
+    @Test
+    public void updateStudentEmailBlank() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(" ")).thenReturn(Optional.empty());
+
+        studentDTOForUpdate.setName(null);
+        studentDTOForUpdate.setDob(null);
+        studentDTOForUpdate.setEmail(" ");
+
+        try {
+            studentService.updateStudent(studentDTOForUpdate, ID);
+            fail("Should have thrown an exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Dob, Name and/or email must be provided and different from existing values", e.getMessage());
+        }
+    }
+
+    @Test
+    public void updateStudentNameBlank() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+
+        studentDTOForUpdate.setName(" ");
+        studentDTOForUpdate.setEmail(null);
+        studentDTOForUpdate.setDob(null);
+
+        try {
+            studentService.updateStudent(studentDTOForUpdate, ID);
+            fail("Should have thrown an exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Dob, Name and/or email must be provided and different from existing values", e.getMessage());
+        }
+    }
+
+    @Test
+    public void updateStudentEmailException() throws EmailAlreadyTakenException {
+        Student student = new Student();
+        student.setEmail(EMAIL);
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+
+        studentDTOForUpdate.setName(null);
+        studentDTOForUpdate.setDob(null);
+
+        try {
+            studentService.updateStudent(studentDTOForUpdate, ID);
+            fail("Should have thrown an exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Dob, Name and/or email must be provided and different from existing values", e.getMessage());
+        }
+
+    }
+
+    @Test
+    public void updateStudentThrowsStudentWithIdDoesNotExistException() {
+        when(studentRepository.findById(ID)).thenReturn(Optional.empty());
+
+        try {
+            studentService.updateStudent(studentDTOForUpdate, ID);
+            fail("Should have thrown an exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals(String.format("Student with id %s does not exists", ID), e.getMessage());
+        }
+    }
+
+    @Test
+    public void updateStudentThrowsNameAndEmailCannotBeNullException(){
+        Student student = new Student();
+
+        when(studentRepository.findById(ID)).thenReturn(Optional.of(student));
+
+        studentDTOForUpdate.setName(null);
+        studentDTOForUpdate.setEmail(null);
+        studentDTOForUpdate.setDob(null);
+
+        try {
+            studentService.updateStudent(studentDTOForUpdate, ID);
+            fail("Should have thrown an exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Dob, Name and/or email must be provided and different from existing values", e.getMessage());
+        }
+    }
+
+    @Test
+    public void updateStudentThrowsEmailAlreadyTakenException() {
+        Student student = new Student();
+        when(studentRepository.findById(ID)).thenReturn(Optional.of(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.of(student));
+
+        try {
+            studentService.updateStudent(studentDTOForUpdate, ID);
+            fail("Should have thrown an exception");
+        } catch (EmailAlreadyTakenException e) {
+            assertEquals(String.format("email %s is taken", EMAIL), e.getMessage());
+        }
+    }
 
     @Test
     public void findStudentById() {
