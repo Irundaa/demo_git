@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
@@ -88,7 +89,7 @@ public class StudentServiceTest {
 
     @Test
     public void updateStudentEmailAndName() throws EmailAlreadyTakenException {
-        Student student = new Student();
+        Student student = new Student("Old name", LocalDate.of(2000, 1, 10), "Old email");
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
         when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
         studentDTOForUpdate.setDob(null);
@@ -97,7 +98,23 @@ public class StudentServiceTest {
 
         assertEquals(NAME, student.getName());
         assertEquals(EMAIL, student.getEmail());
-    }
+        assertEquals(LocalDate.of(2000, 1, 10), student.getDob());
+    }//
+
+    @Test
+    public void updateStudentEmailAndNamev2() throws EmailAlreadyTakenException {
+        Student student = Mockito.mock(Student.class);
+        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
+        studentDTOForUpdate.setDob(null);
+
+        studentService.updateStudent(studentDTOForUpdate, ID);
+
+        verify(student).setEmail(EMAIL);
+        verify(student).setName(NAME);
+        verify(student, never()).setDob(any());
+    }//змінити так всі тести
+    //тест на всі три поля одночасно на кожен окремо і на жоден
 
     @Test
     public void updateStudentEmailAndDob() throws EmailAlreadyTakenException {

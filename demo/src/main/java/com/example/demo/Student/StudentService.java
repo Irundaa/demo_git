@@ -61,7 +61,7 @@ public class StudentService {
             isUpdated = true;
         }
 
-        if (dob != null && !Objects.equals(dob, studentDB.getDob())) {
+        if (Objects.nonNull(dob) && !Objects.equals(dob, studentDB.getDob()) && LocalDate.now().isAfter(dob)) {
             studentDB.setDob(dob);
             isUpdated = true;
         }
