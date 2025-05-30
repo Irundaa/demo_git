@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
@@ -20,16 +19,19 @@ public class StudentServiceTest {
 
     @Mock
     private StudentRepository studentRepository;
+    @Mock
+    private Student student;
 
     @InjectMocks
     private StudentService studentService;
 
     private static final Long ID = 10L;
     private static final String NAME = "Mary Jane";
+    private static final Optional<LocalDate> DOB_OPTIONAL = Optional.of(LocalDate.of(2002, 1, 1));
     private static final LocalDate DOB = LocalDate.of(2002, 1, 1);
     private static final String EMAIL = "mary@gmail.com";
-    private StudentDTO studentDTO = new StudentDTO(1L, NAME, DOB, EMAIL);
-    private StudentDTO studentDTOForUpdate = new StudentDTO(null, NAME, DOB, EMAIL);
+    private final StudentDTO studentDTO = new StudentDTO(1L, NAME, DOB_OPTIONAL, EMAIL);
+    private final StudentDTO studentDTOForUpdate = new StudentDTO(null, NAME, DOB_OPTIONAL, EMAIL);
 
     @Test
     public void addNewStudentThrowsException(){
@@ -76,120 +78,79 @@ public class StudentServiceTest {
 
     @Test
     public void updateStudentEmailAndNameAndDob() throws EmailAlreadyTakenException {
-        Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
         when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
-
-        studentService.updateStudent(studentDTOForUpdate, ID);
-
-        assertEquals(NAME, student.getName());
-        assertEquals(EMAIL, student.getEmail());
-        assertEquals(DOB, student.getDob());
-    }
-
-    @Test
-    public void updateStudentEmailAndName() throws EmailAlreadyTakenException {
-        Student student = new Student("Old name", LocalDate.of(2000, 1, 10), "Old email");
-        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
-        studentDTOForUpdate.setDob(null);
-
-        studentService.updateStudent(studentDTOForUpdate, ID);
-
-        assertEquals(NAME, student.getName());
-        assertEquals(EMAIL, student.getEmail());
-        assertEquals(LocalDate.of(2000, 1, 10), student.getDob());
-    }//
-
-    @Test
-    public void updateStudentEmailAndNamev2() throws EmailAlreadyTakenException {
-        Student student = Mockito.mock(Student.class);
-        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
-        studentDTOForUpdate.setDob(null);
 
         studentService.updateStudent(studentDTOForUpdate, ID);
 
         verify(student).setEmail(EMAIL);
         verify(student).setName(NAME);
-        verify(student, never()).setDob(any());
-    }//змінити так всі тести
-    //тест на всі три поля одночасно на кожен окремо і на жоден
-
-    @Test
-    public void updateStudentEmailAndDob() throws EmailAlreadyTakenException {
-        Student student = new Student();
-        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
-        studentDTOForUpdate.setName(null);
-
-        studentService.updateStudent(studentDTOForUpdate, ID);
-
-        assertEquals(DOB, student.getDob());
-        assertEquals(EMAIL, student.getEmail());
+        verify(student).setDob(DOB);
     }
 
-    @Test
-    public void updateStudentDobAndName() throws EmailAlreadyTakenException {
-        Student student = new Student();
-        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
-        studentDTOForUpdate.setEmail(null);
-
-        studentService.updateStudent(studentDTOForUpdate, ID);
-
-        assertEquals(NAME, student.getName());
-        assertEquals(DOB, student.getDob());
-    }
+//    @Test
+//    public void updateStudentEmailAndName() throws EmailAlreadyTakenException {
+//        Student student = new Student("Old name", LocalDate.of(2000, 1, 10), "Old email");
+//        when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
+//        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
+//        studentDTOForUpdate.setDob(null);
+//
+//        studentService.updateStudent(studentDTOForUpdate, ID);
+//
+//        assertEquals(NAME, student.getName());
+//        assertEquals(EMAIL, student.getEmail());
+//        assertEquals(LocalDate.of(2000, 1, 10), student.getDob());
+//    }
 
     @Test
     public void updateStudentName() throws EmailAlreadyTakenException {
-        Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
 
         studentDTOForUpdate.setEmail(null);
-        studentDTOForUpdate.setDob(null);
+        studentDTOForUpdate.setDob(Optional.empty());
 
         studentService.updateStudent(studentDTOForUpdate, ID);
 
-        assertEquals(NAME, student.getName());
+        verify(student, never()).setEmail(any());
+        verify(student).setName(NAME);
+        verify(student, never()).setDob(any());
     }
 
     @Test
     public void updateStudentEmail() throws EmailAlreadyTakenException {
-        Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
         when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.empty());
 
         studentDTOForUpdate.setName(null);
-        studentDTOForUpdate.setDob(null);
+        studentDTOForUpdate.setDob(Optional.empty());
 
         studentService.updateStudent(studentDTOForUpdate, ID);
 
-        assertEquals(EMAIL, student.getEmail());
+        verify(student).setEmail(EMAIL);
+        verify(student, never()).setName(any());
+        verify(student, never()).setDob(any());
     }
 
     @Test
     public void updateStudentDob() throws EmailAlreadyTakenException {
-        Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-        when(studentRepository.findStudentByEmail(EMAIL)).thenReturn(Optional.of(student));
         studentDTOForUpdate.setName(null);
         studentDTOForUpdate.setEmail(null);
 
         studentService.updateStudent(studentDTOForUpdate, ID);
 
-        assertEquals(DOB, student.getDob());
+        verify(student).setDob(DOB);
+        verify(student, never()).setEmail(any());
+        verify(student, never()).setName(any());
     }
 
     @Test
     public void updateStudentEmailBlank() throws EmailAlreadyTakenException {
         Student student = new Student();
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
-        when(studentRepository.findStudentByEmail(" ")).thenReturn(Optional.empty());
 
         studentDTOForUpdate.setName(null);
-        studentDTOForUpdate.setDob(null);
+        studentDTOForUpdate.setDob(Optional.empty());
         studentDTOForUpdate.setEmail(" ");
 
         try {
@@ -207,7 +168,7 @@ public class StudentServiceTest {
 
         studentDTOForUpdate.setName(" ");
         studentDTOForUpdate.setEmail(null);
-        studentDTOForUpdate.setDob(null);
+        studentDTOForUpdate.setDob(Optional.empty());
 
         try {
             studentService.updateStudent(studentDTOForUpdate, ID);
@@ -224,7 +185,7 @@ public class StudentServiceTest {
         when(studentRepository.findById(ID)).thenReturn(Optional.ofNullable(student));
 
         studentDTOForUpdate.setName(null);
-        studentDTOForUpdate.setDob(null);
+        studentDTOForUpdate.setDob(Optional.empty());
 
         try {
             studentService.updateStudent(studentDTOForUpdate, ID);
@@ -255,7 +216,7 @@ public class StudentServiceTest {
 
         studentDTOForUpdate.setName(null);
         studentDTOForUpdate.setEmail(null);
-        studentDTOForUpdate.setDob(null);
+        studentDTOForUpdate.setDob(Optional.empty());
 
         try {
             studentService.updateStudent(studentDTOForUpdate, ID);
@@ -291,7 +252,7 @@ public class StudentServiceTest {
         StudentDTO dto = result.get();
         assertEquals(NAME, dto.getName());
         assertEquals(EMAIL, dto.getEmail());
-        assertEquals(DOB, dto.getDob());
+        assertEquals(DOB_OPTIONAL, dto.getDob());
     }
 
     @Test
@@ -308,9 +269,9 @@ public class StudentServiceTest {
         assertEquals(2, result.size());
         assertEquals(NAME, result.get(0).getName());
         assertEquals(EMAIL, result.get(0).getEmail());
-        assertEquals(DOB, result.get(0).getDob());
+        assertEquals(DOB_OPTIONAL, result.get(0).getDob());
         assertEquals("Lion King", result.get(1).getName());
         assertEquals("Lion20@gmail.com", result.get(1).getEmail());
-        assertEquals(LocalDate.of(2005, 1, 1), result.get(1).getDob());
+        assertEquals(Optional.of(LocalDate.of(2005, 1, 1)), result.get(1).getDob());
     }
 }
